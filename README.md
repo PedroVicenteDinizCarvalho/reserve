@@ -72,14 +72,32 @@ php artisan key:generate
 php artisan migrate
 php artisan db:seed
 ```
-### 5. Acessar app
+
+### 5. Rodar o frontend
+
+Abra um terminal na raiz do projeto
+
+```bash
+npm install
+npm run dev
+```
+
+### 6. Acessar app
 http://localhost/
 
 Para logar com usuário admin
 email: admin@example.com
 password: password123
 
-### 6. Desligar docker
+### 7. Desligar docker
 ```bash
 docker-compose down
 ```
+
+### Você pode usar e melhorar este projeto
+O que precisa ser feito:
+- Design mais fluído e funcional para o CRUD de reservas
+- Listagem com dias e horários disponíveis de cada mesa (isso facilita no momento do usuário selecionar um período para sua reserva)
+- Relatórios sobre o fluxo de reservas do estabeleciomento
+- Fluxo de aprovação de reservas pelo administrador do estabelecimento
+- Disparo de emails e sistema recaptcha para validação de usuário
