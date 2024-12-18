@@ -1,25 +1,25 @@
 <template>
     <div>
-      <h1>Manage Tables</h1>
+      <h1>Gerenciar Mesas</h1>
       <form @submit.prevent="addTable">
         <div>
-          <label>Description:</label>
+          <label>Descrição:</label>
           <input v-model="form.description" type="text" required />
         </div>
         <div>
-          <label>Number of Chairs:</label>
+          <label>Número de lugares:</label>
           <input v-model="form.number_chairs" type="number" required />
         </div>
-        <button type="submit">Add Table</button>
+        <button type="submit">Adicionar</button>
       </form>
   
       <table border="1">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Description</th>
-            <th>Number of Chairs</th>
-            <th>Actions</th>
+            <th>Descrição</th>
+            <th>Cadeiras</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -39,7 +39,7 @@
               />
             </td>
             <td>
-              <button @click="deleteTable(table.id)">Delete</button>
+              <button @click="deleteTable(table.id)">Deletar</button>
             </td>
           </tr>
         </tbody>

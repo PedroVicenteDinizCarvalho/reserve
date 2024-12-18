@@ -2,17 +2,22 @@
     <div id="app">
       <div v-if="user">
         <h1>Olá {{ user.name }}, selecione a mesa e depois o horário disponível para efetuar a reserva</h1> 
-        <h3>Funcionamento de Segunda a Sexta das 18h as 00h com horários especiais no domingo</h3> 
+        <h3>Funcionamento de Segunda a Sábado das 18h as 00h com horários especiais no domingo</h3>
+
+        <!-- Logout Button -->
+        <div class="logout-container">
+          <button @click="logout">Logout</button>
+        </div>
 
         <TablesScreen />
 
-        <div v-if="user && user.admin === true">
+        <div v-if="user && user.admin === 1">
           <TablesAdminVue />
         </div>
       </div>
       <div v-else>
         <h1>Bem-vindo ao Reserve APP - Acesse ou registre-se para realizar sua reserva</h1>
-        <div>
+        <div class="auth-container">
           <!-- Login Button -->
           <button @click="openModal('login')">Login</button>
 
@@ -91,14 +96,10 @@ export default {
   methods: {
     async fetchUser() {
       try {
-        // Revalidate user using token
         const response = await axios.get('/api/user');
-        this.user = response.data; // Set the user data
       } catch (error) {
-        console.error("User not authenticated:", error);
+        console.error("Usuário não autenticado", error);
         this.user = null;
-
-        // Clear localStorage if the user is not authenticated
         localStorage.removeItem('user');
         localStorage.removeItem('token');
       }
@@ -111,7 +112,6 @@ export default {
       this.isModalOpen = false;
       this.form = { name: '', email: '', password: '' };
     },
-  
     async submitForm() {
       try {
         await axios.get('/sanctum/csrf-cookie');
@@ -122,18 +122,26 @@ export default {
 
         const { user, token } = response.data;
 
-        // Save user and token to localStorage
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('token', token);
 
-        // Set token in default headers
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-        this.user = user; // Set the user data in Vue state
-        this.closeModal(); // Close modal after successful login/register
+        this.user = user;
+        this.closeModal();
       } catch (error) {
-        console.error("Error submitting form:", error);
-        alert('An error occurred. Please try again.');
+        console.error("Erro ao enviar formulário:", error);
+        alert('Um erro aconteceu, por favor tente novamente.');
+      }
+    },
+    async logout() {
+      try {
+        await axios.post('/api/logout');
+        window.location.href = '/';
+        alert('Até a próxima!');
+      } catch (error) {
+        console.error('Erro de logout:', error);
+        alert('Ops, um erro aconteceu');
       }
     }
   },
@@ -147,7 +155,7 @@ export default {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
 
-    this.fetchUser(); // Revalidate the user session
+    this.fetchUser();
   },
 
   components: {
@@ -220,6 +228,20 @@ export default {
   
   .modal-content button:hover {
     background-color: #36a16a;
+  }
+
+  .logout-container {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    text-align: center; 
+  }
+
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center; 
   }
   </style>
   
