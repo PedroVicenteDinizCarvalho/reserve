@@ -1,10 +1,12 @@
 <template>
     <div id="app">
       <div v-if="user">
-        <p>Hello, {{ user.name }}!</p>  <!-- Display the user's name -->
+        <h1>Olá {{ user.name }}, selecione a mesa e depois o horário disponível para efetuar a reserva</h1> 
+        <h3>Funcionamento de Segunda a Sexta das 18h as 00h com horários especiais no domingo</h3> 
+
         <TablesScreen />
 
-        <div v-if="user.admin = true">
+        <div v-if="user && user.admin === true">
           <TablesAdminVue />
         </div>
       </div>
@@ -64,69 +66,105 @@
 </template>
   
 <script>
-  import axios from 'axios';
-  import TablesScreen from './components/TablesComponent.vue';
-  import TablesAdminVue from './components/admin/TablesAdminComponent.vue';
+import axios from 'axios';
+axios.defaults.baseURL = 'http://localhost';
+axios.defaults.withCredentials = true;
 
+import TablesScreen from './components/TablesComponent.vue';
+import TablesAdminVue from './components/admin/TablesAdminComponent.vue';
 
-  export default {
-    name: "App",
-    data() {
-      return {
-        user: null,
-        form: {
-          email: '',
-          password: ''
-        },
-        isModalOpen: false,
-        modalType: '', 
-      };
+export default {
+  name: "App",
+  data() {
+    return {
+      user: null,
+      form: {
+        name: '',
+        email: '',
+        password: ''
+      },
+      isModalOpen: false,
+      modalType: '', 
+    };
+  },
+
+  methods: {
+    async fetchUser() {
+      try {
+        // Revalidate user using token
+        const response = await axios.get('/api/user');
+        this.user = response.data; // Set the user data
+      } catch (error) {
+        console.error("User not authenticated:", error);
+        this.user = null;
+
+        // Clear localStorage if the user is not authenticated
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     },
-    methods: {
-      async fetchUser() {
-        try {
-          const response = await axios.get('/api/user');
-          this.user = response.data;
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      },
-      openModal(type) {
-        this.modalType = type;  // 'login' or 'register'
-        this.isModalOpen = true;  // Open modal
-      },
-      closeModal() {
-        this.isModalOpen = false;  // Close modal
-        this.form.email = '';
-        this.form.password = '';
-      },
+    openModal(type) {
+      this.modalType = type; 
+      this.isModalOpen = true;
     },
+    closeModal() {
+      this.isModalOpen = false;
+      this.form = { name: '', email: '', password: '' };
+    },
+  
     async submitForm() {
       try {
-        const response = this.modalType === 'register'
-          ? await axios.post('/api/register', this.form)  // Register user
-          : await axios.post('/api/login', this.form);    // Login user
+        await axios.get('/sanctum/csrf-cookie');
 
-        this.user = response.data;
-        this.closeModal();
+        const response = this.modalType === 'register'
+          ? await axios.post('/api/register', this.form) 
+          : await axios.post('/api/login', this.form);
+
+        const { user, token } = response.data;
+
+        // Save user and token to localStorage
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', token);
+
+        // Set token in default headers
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        this.user = user; // Set the user data in Vue state
+        this.closeModal(); // Close modal after successful login/register
       } catch (error) {
         console.error("Error submitting form:", error);
         alert('An error occurred. Please try again.');
       }
-    },
-    mounted() {
-      this.fetchUser();
-    },
-    components: {
-        TablesScreen,
-        TablesAdminVue
-    },
-  };
-  </script>
+    }
+  },
+
+  mounted() {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+
+    if (storedUser && token) {
+      this.user = JSON.parse(storedUser);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+
+    this.fetchUser(); // Revalidate the user session
+  },
+
+  components: {
+    TablesScreen,
+    TablesAdminVue
+  },
+};
+</script>
   
   <style scoped>
   h1 {
     color: #42b983;
+    text-align: center;
+  }
+
+  h3 {
+    text-align: center;
   }
   
   button {
