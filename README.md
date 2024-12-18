@@ -52,7 +52,7 @@ DB_PASSWORD=laravel_password
 docker-compose up --build
 ```
 
-### 4. Rodar o composer dentro do Docker
+### 4. Rodar o laravel dentro do Docker
 
 Abra o terminal dentro do docker
 
@@ -74,6 +74,10 @@ php artisan db:seed
 ```
 ### 5. Acessar app
 http://localhost/
+
+Para logar com usuário admin
+email: admin@example.com
+password: password123
 
 ### 6. Desligar docker
 ```bash
